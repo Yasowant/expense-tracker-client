@@ -1,10 +1,9 @@
-
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Button } from "@/components/ui/button";
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { z } from 'zod';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
@@ -12,32 +11,36 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/use-toast";
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { useToast } from '@/components/ui/use-toast';
+import axios from '@/lib/axios'; // ✅ Use your custom axios instance
 
-// Login form schema
+// Schemas
 const loginSchema = z.object({
-  email: z.string().email("Please enter a valid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  email: z.string().email('Please enter a valid email address'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
-// Registration form schema
-const registerSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  email: z.string().email("Please enter a valid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-  confirmPassword: z.string().min(6, "Password must be at least 6 characters"),
-}).refine((data) => data.password === data.confirmPassword, {
-  path: ["confirmPassword"],
-  message: "Passwords do not match",
-});
+const registerSchema = z
+  .object({
+    name: z.string().min(2, 'Name must be at least 2 characters'),
+    email: z.string().email('Please enter a valid email address'),
+    password: z.string().min(6, 'Password must be at least 6 characters'),
+    confirmPassword: z
+      .string()
+      .min(6, 'Password must be at least 6 characters'),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    path: ['confirmPassword'],
+    message: 'Passwords do not match',
+  });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
 interface AuthFormProps {
-  type: "login" | "register";
+  type: 'login' | 'register';
 }
 
 export const AuthForm = ({ type }: AuthFormProps) => {
@@ -45,45 +48,63 @@ export const AuthForm = ({ type }: AuthFormProps) => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
 
-  // Select the appropriate schema based on form type
-  const schema = type === "login" ? loginSchema : registerSchema;
-  
-  // Initialize the form with the selected schema
+  const schema = type === 'login' ? loginSchema : registerSchema;
+
   const form = useForm<LoginFormValues | RegisterFormValues>({
     resolver: zodResolver(schema),
-    defaultValues: type === "login" 
-      ? { email: "", password: "" }
-      : { name: "", email: "", password: "", confirmPassword: "" },
+    defaultValues:
+      type === 'login'
+        ? { email: '', password: '' }
+        : { name: '', email: '', password: '', confirmPassword: '' },
   });
 
-  // Handle form submission
   const onSubmit = async (data: LoginFormValues | RegisterFormValues) => {
     setIsLoading(true);
-    
+
     try {
-      // Simulate API call delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      
-      console.log(`${type === "login" ? "Login" : "Registration"} data:`, data);
-      
-      // Show success toast
+      const endpoint = type === 'login' ? '/auth/login' : '/auth/register';
+
+      const payload =
+        type === 'login'
+          ? {
+              email: (data as LoginFormValues).email,
+              password: (data as LoginFormValues).password,
+            }
+          : {
+              name: (data as RegisterFormValues).name,
+              email: (data as RegisterFormValues).email,
+              password: (data as RegisterFormValues).password,
+            };
+
+      const res = await axios.post(endpoint, payload);
+
+      if (type === 'login') {
+        const { accessToken, refreshToken, user } = res.data;
+
+        localStorage.setItem('accessToken', accessToken);
+        localStorage.setItem('refreshToken', refreshToken);
+        localStorage.setItem('user', JSON.stringify(user));
+      }
+
       toast({
-        title: type === "login" ? "Login successful" : "Registration successful",
-        description: type === "login" 
-          ? "You are now logged in to your account." 
-          : "Your account has been created successfully.",
+        title:
+          type === 'login' ? 'Login successful' : 'Registration successful',
+        description:
+          type === 'login'
+            ? 'You are now logged in to your account.'
+            : 'Your account has been created successfully.',
       });
-      
-      // Redirect to dashboard
-      navigate("/dashboard");
-    } catch (error) {
-      console.error("Error:", error);
-      
-      // Show error toast
+
+      navigate('/dashboard');
+    } catch (error: any) {
+      const errMsg =
+        error.response?.data?.message ||
+        'Something went wrong. Please try again.';
+
       toast({
-        title: "An error occurred",
-        description: `Failed to ${type === "login" ? "login" : "register"}. Please try again.`,
-        variant: "destructive",
+        title: 'Error',
+        description: errMsg,
+        variant: 'destructive',
       });
     } finally {
       setIsLoading(false);
@@ -93,7 +114,7 @@ export const AuthForm = ({ type }: AuthFormProps) => {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 w-full">
-        {type === "register" && (
+        {type === 'register' && (
           <FormField
             control={form.control}
             name="name"
@@ -108,7 +129,7 @@ export const AuthForm = ({ type }: AuthFormProps) => {
             )}
           />
         )}
-        
+
         <FormField
           control={form.control}
           name="email"
@@ -122,7 +143,7 @@ export const AuthForm = ({ type }: AuthFormProps) => {
             </FormItem>
           )}
         />
-        
+
         <FormField
           control={form.control}
           name="password"
@@ -136,8 +157,8 @@ export const AuthForm = ({ type }: AuthFormProps) => {
             </FormItem>
           )}
         />
-        
-        {type === "register" && (
+
+        {type === 'register' && (
           <FormField
             control={form.control}
             name="confirmPassword"
@@ -152,9 +173,13 @@ export const AuthForm = ({ type }: AuthFormProps) => {
             )}
           />
         )}
-        
+
         <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading ? "Processing..." : type === "login" ? "Login" : "Register"}
+          {isLoading
+            ? 'Processing...'
+            : type === 'login'
+            ? 'Login'
+            : 'Register'}
         </Button>
       </form>
     </Form>
