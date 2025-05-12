@@ -16,5 +16,4 @@ A secure and scalable backend for the DivideShare app – designed to help users
 
 ---
 
-## 📁 Folder Structure
 
