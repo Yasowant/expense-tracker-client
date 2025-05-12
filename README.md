@@ -1,29 +1,20 @@
-# DivideShare
+# DivideShare Backend
 
-**Split Expenses Without the Stress**
+A secure and scalable backend for the DivideShare app – designed to help users split and track shared expenses effortlessly.
 
-DivideShare makes it simple to track shared expenses, manage IOUs, and settle up with friends, roommates, and travel companions.
+## ⚙️ Tech Stack
 
-## 🌟 Features
+- **Node.js** + **Express.js**
+- **TypeScript**
+- **MongoDB** with **Mongoose**
+- **JWT** for access & refresh tokens
+- **bcrypt** for password hashing
+- **Docker** for containerization
+- **Winston** for logging
+- **dotenv** for environment configuration
+- **Zod** (optional) for schema validation
 
-- ✅ **Add Expenses** – Record what you spent and who was involved
-- 👥 **Split with Friends** – Create groups for trips, roommates, or events
-- 💰 **Settle Up** – Easily track and settle who owes what
-- 🌙 **Toggle Theme** – Switch between dark and light modes
-- 🔐 **Authentication** – Login and register with secure access
+---
 
-## 🚀 Getting Started
+## 📁 Folder Structure
 
-### Prerequisites
-
-- Node.js v18+
-- npm or yarn
-- MongoDB (if using backend)
-
-### Installation
-
-Clone the repo:
-
-```bash
-git clone https://github.com/yourusername/divideshare.git
-cd divideshare
